@@ -4,7 +4,7 @@ Welcome to my blog where I'm posting some of the things that I was working on.
 
 ## Original Readme & Credits
 
-* [Paul Le](https://github.com/LeNPaul)
+* [Millenial - Paul Le](https://github.com/LeNPaul/Millennial)
 
 ## License
 

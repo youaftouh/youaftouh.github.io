@@ -1,6 +1,6 @@
 ## Welcome
 
-I'm Yasser Ouaftouh and this is my personal blog.
+Welcome to my blog where I'm posting some of the things that I was working on.
 
 ## Original Readme & Credits
 

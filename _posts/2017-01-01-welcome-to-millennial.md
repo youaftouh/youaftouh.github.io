@@ -42,7 +42,7 @@ The Jekyll Starter Kit is a simple framework for starting your own Jekyll projec
 Feel free to check out <a href="https://github.com/LeNPaul/jekyll-starter-kit" target="_blank">the GitHub repository</a>, where you’ll also find instructions on how to use install and use the theme.
 
 ### Save for later - Java
-
+```
 Supplier       ()    -> x
 Consumer       x     -> ()
 BiConsumer     x, y  -> ()
@@ -53,3 +53,4 @@ BiFunction     x,y   -> z
 Predicate      x     -> boolean
 UnaryOperator  x1    -> x2
 BinaryOperator x1,x2 -> x3
+```

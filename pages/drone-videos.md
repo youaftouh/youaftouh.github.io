@@ -45,7 +45,7 @@ permalink: /drone-videos
   {% endfor %}
 </div>
 
-<!-- Paginated Gallery Controls (9 items per page) -->
+<!-- Paginated Gallery Controls (10 items per page) -->
 <div id="drone-pagination" class="gallery-pagination"></div>
 
 <!-- In-Page YouTube Video Modal -->
@@ -134,9 +134,9 @@ permalink: /drone-videos
   }
 
   /* ==========================================================================
-     Paginated Gallery Logic (9 items per page)
+     Paginated Gallery Logic (10 items per page)
      ========================================================================== */
-  var ITEMS_PER_PAGE = 9;
+  var ITEMS_PER_PAGE = 10;
   var items = Array.prototype.slice.call(document.querySelectorAll('.drone-gallery-item'));
   var totalItems = items.length;
   var totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);

@@ -1,0 +1,42 @@
+name: Update Content
+
+on:
+  schedule:
+    # Runs every Sunday at 00:00 UTC (once a week)
+    - cron: '0 0 * * 0'
+  workflow_dispatch: # Allows manual triggering from the GitHub Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run content updater script
+        run: |
+          python3 scripts/update_content.py
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.name "Yasser Ouaftouh"
+          git config --local user.email "yasser.ouaftouh@gmail.com"
+          git add _data/drone_videos.yml _data/chess_blogs.yml
+          if git diff --staged --quiet; then
+            echo "No content changes detected. Everything is up to date."
+          else
+            echo "New content detected. Committing and pushing..."
+            git commit -m "Auto-update content: Drone videos & Chess blogs [skip ci]"
+            git push origin gh-pages
+          fi

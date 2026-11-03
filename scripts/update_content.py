@@ -50,7 +50,6 @@ def update_drone_videos():
         return
 
     videos = []
-    # Known locations mapping for eirefly videos if available
     known_locations = {
         "iMlPiBvgdKE": "Co. Wexford, Ireland",
         "b7JBlVZCg8w": "Nador, Morocco",
@@ -131,13 +130,24 @@ def update_drone_videos():
 
 def update_chess_blogs():
     print("-> Fetching Chess.com blogs from yasser-blog...")
-    # Known articles published on yasser-blog
     article_urls = [
         "https://www.chess.com/blog/yasser-blog/the-queens-gambit-the-show-that-made-the-world-fall-in-love-with-chess",
         "https://www.chess.com/blog/yasser-blog/5-of-the-most-expensive-chess-sets-ever-made",
         "https://www.chess.com/blog/yasser-blog/the-pirate-who-sacrificed-a-pawn",
         "https://www.chess.com/blog/yasser-blog/5-mindset-shifts-that-will-instantly-make-you-a-better-chess-player",
     ]
+
+    # Try discovering additional posts dynamically from the blog index
+    try:
+        index_req = urllib.request.Request("https://www.chess.com/blog/yasser-blog", headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(index_req, timeout=10) as resp:
+            html = resp.read().decode("utf-8", errors="ignore")
+            found_urls = re.findall(r'href=[\"\'](https://www.chess.com/blog/yasser-blog/[a-zA-Z0-9_-]+)[\"\']', html)
+            for u in found_urls:
+                if u not in article_urls:
+                    article_urls.append(u)
+    except Exception as e:
+        print(f"Notice: blog index scrape: {e}")
 
     posts = []
     for u in article_urls:

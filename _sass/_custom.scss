@@ -16,13 +16,19 @@
 }
 
 /* ==========================================================================
-   Chess Blogs Grid
+   Chess Blogs Grid (2 Columns)
    ========================================================================== */
 .chess-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 25px;
   margin: 25px 0 40px;
+}
+
+@media (max-width: 650px) {
+  .chess-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 .chess-card {
@@ -121,7 +127,7 @@
 }
 
 /* ==========================================================================
-   Drone Videos Gallery & Pagination
+   Drone Videos Gallery (2 Columns) & Lightbox Player
    ========================================================================== */
 .drone-channel-banner {
   display: flex;
@@ -168,9 +174,15 @@
 
 .drone-gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  grid-template-columns: repeat(2, 1fr) !important;
   gap: 25px;
   margin: 25px 0 35px;
+}
+
+@media (max-width: 650px) {
+  .drone-gallery-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
 
 .drone-card {
@@ -182,6 +194,7 @@
   overflow: hidden;
   text-decoration: none !important;
   color: inherit;
+  cursor: pointer;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
@@ -247,7 +260,7 @@
 }
 
 .drone-card-title {
-  font-size: 1.02rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: #1a202c;
   margin: 0 0 10px 0;
@@ -262,10 +275,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   color: #718096;
   margin-top: auto;
-  padding-top: 8px;
+  padding-top: 10px;
   border-top: 1px solid #f1f5f9;
 }
 
@@ -275,6 +288,15 @@
   gap: 5px;
   color: #4a5568;
   font-weight: 500;
+}
+
+.drone-card-action {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #e52d27;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 /* Gallery Pagination UI */
@@ -326,6 +348,147 @@
   font-size: 0.9rem;
   color: #64748b;
   font-weight: 500;
+}
+
+/* ==========================================================================
+   In-Page Video Modal (Watch YouTube In-Page)
+   ========================================================================== */
+.video-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.video-modal.is-active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.video-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.video-modal-dialog {
+  position: relative;
+  width: 90%;
+  max-width: 900px;
+  background: #111827;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95);
+  transition: transform 0.25s ease;
+}
+
+.video-modal.is-active .video-modal-dialog {
+  transform: scale(1);
+}
+
+.video-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: #1f2937;
+  border-bottom: 1px solid #374151;
+}
+
+.video-modal-title {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #f3f4f6;
+  font-weight: 600;
+  line-height: 1.3;
+  padding-right: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.video-modal-close {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 6px;
+  transition: color 0.2s ease;
+}
+
+.video-modal-close:hover {
+  color: #ffffff;
+}
+
+.video-modal-body {
+  position: relative;
+  width: 100%;
+  background: #000;
+}
+
+.video-modal-responsive {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+  overflow: hidden;
+}
+
+.video-modal-responsive iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #1f2937;
+  border-top: 1px solid #374151;
+}
+
+.video-modal-yt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #e52d27 !important;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: opacity 0.2s ease;
+}
+
+.video-modal-yt-btn:hover {
+  opacity: 0.8;
+  text-decoration: underline !important;
+}
+
+.video-modal-tip {
+  font-size: 0.8rem;
+  color: #9ca3af;
 }
 
 /* ==========================================================================

@@ -21,8 +21,11 @@ permalink: /chess-blogs
     <div class="chess-card-body">
       <h3 class="chess-card-title">{{ blog.title }}</h3>
       <p class="chess-card-excerpt">{{ blog.excerpt }}</p>
-      <div class="chess-card-action">
-        Read on Chess.com <i class="fa fa-external-link"></i>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; border-top: 1px solid #f1f5f9; font-size: 0.85rem; color: #718096;">
+        <span><i class="fa fa-calendar-o"></i> {{ blog.date }}</span>
+        <span class="chess-card-action">
+          Read on Chess.com <i class="fa fa-external-link"></i>
+        </span>
       </div>
     </div>
   </a>

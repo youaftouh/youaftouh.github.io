@@ -14,6 +14,7 @@ import sys
 import os
 import re
 import urllib.request
+import urllib.parse
 import xml.etree.ElementTree as ET
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,7 +22,7 @@ DATA_DIR = os.path.join(BASE_DIR, "_data")
 DRONE_FILE = os.path.join(DATA_DIR, "drone_videos.yml")
 CHESS_FILE = os.path.join(DATA_DIR, "chess_blogs.yml")
 
-USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko)"
+USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 
 
 def update_drone_videos():
@@ -132,36 +133,47 @@ def update_chess_blogs():
     print("-> Fetching Chess.com blogs from yasser-blog...")
     article_urls = [
         "https://www.chess.com/blog/yasser-blog/the-queens-gambit-the-show-that-made-the-world-fall-in-love-with-chess",
+        "https://www.chess.com/blog/yasser-blog/why-is-the-knight-a-horse",
         "https://www.chess.com/blog/yasser-blog/5-of-the-most-expensive-chess-sets-ever-made",
+        "https://www.chess.com/blog/yasser-blog/if-chess-pieces-had-personalities",
+        "https://www.chess.com/blog/yasser-blog/build-a-simple-chess-game-in-minutes",
         "https://www.chess.com/blog/yasser-blog/the-pirate-who-sacrificed-a-pawn",
+        "https://www.chess.com/blog/yasser-blog/the-most-underrated-chess-openings",
+        "https://www.chess.com/blog/yasser-blog/top-5-most-famous-anime-that-showcase-chess",
         "https://www.chess.com/blog/yasser-blog/5-mindset-shifts-that-will-instantly-make-you-a-better-chess-player",
+        "https://www.chess.com/blog/yasser-blog/how-to-unlock-the-searching-for-bobby-fischer-secret-achievement-on-chess-com",
     ]
 
-    # Try discovering additional posts dynamically from the blog index
-    try:
-        index_req = urllib.request.Request("https://www.chess.com/blog/yasser-blog", headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(index_req, timeout=10) as resp:
-            html = resp.read().decode("utf-8", errors="ignore")
-            found_urls = re.findall(r'href=[\"\'](https://www.chess.com/blog/yasser-blog/[a-zA-Z0-9_-]+)[\"\']', html)
-            for u in found_urls:
-                if u not in article_urls:
-                    article_urls.append(u)
-    except Exception as e:
-        print(f"Notice: blog index scrape: {e}")
+    # Try discovering additional posts dynamically
+    for query in ["yasseruski", "yasser-blog"]:
+        try:
+            search_url = f"https://www.chess.com/blog/search?keyword={urllib.parse.quote(query)}"
+            req = urllib.request.Request(search_url, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                html = resp.read().decode("utf-8", errors="ignore")
+                found_urls = re.findall(r'href=[\"\'](https?://[^\"]*chess\.com/blog/yasser-blog/[a-zA-Z0-9_\-]+)[\"\']', html)
+                for u in found_urls:
+                    if "register" not in u and "login" not in u and u not in article_urls:
+                        article_urls.append(u)
+        except Exception as e:
+            print(f"Notice: search scrape for {query}: {e}")
 
     posts = []
     for u in article_urls:
         req = urllib.request.Request(u, headers={"User-Agent": USER_AGENT})
         try:
-            with urllib.request.urlopen(req, timeout=15) as resp:
+            with urllib.request.urlopen(req, timeout=12) as resp:
                 html = resp.read().decode("utf-8", errors="ignore")
                 img = re.search(r'<meta property="og:image" content="([^"]+)"', html)
                 title = re.search(r'<meta property="og:title" content="([^"]+)"', html)
                 desc = re.search(r'<meta property="og:description" content="([^"]+)"', html)
+                date_match = re.search(r'data-date=[\"\']([^\"\']+)[\"\']', html)
 
                 t = title.group(1) if title else "Chess Blog Post"
                 thumb = img.group(1) if img else ""
                 excerpt = desc.group(1) if desc else ""
+                date_str = date_match.group(1) if date_match else "Chess.com Blog"
+
                 # Clean html entities
                 t = t.replace("&quot;", '"').replace("&#039;", "'").replace("&amp;", "&")
                 excerpt = excerpt.replace("&quot;", '"').replace("&#039;", "'").replace("&amp;", "&")
@@ -170,7 +182,7 @@ def update_chess_blogs():
                     "title": t,
                     "url": u,
                     "thumbnail": thumb,
-                    "date": "Chess.com Blog",
+                    "date": date_str,
                     "excerpt": excerpt
                 })
         except Exception as e:

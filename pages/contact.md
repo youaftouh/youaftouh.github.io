@@ -56,11 +56,6 @@ permalink: /contact
     </p>
 
     <div class="contact-options-grid">
-      <a href="https://twitter.com/intent/tweet?text=Hi%20@youaftouh%20" target="_blank" rel="noopener noreferrer" class="contact-option-card">
-        <i class="fa fa-twitter" style="color: #00aced;"></i>
-        <span>Tweet at Me</span>
-      </a>
-
       <a href="https://github.com/youaftouh/youaftouh.github.io/issues/new" target="_blank" rel="noopener noreferrer" class="contact-option-card">
         <i class="fa fa-github" style="color: #333333;"></i>
         <span>File a GitHub Issue</span>

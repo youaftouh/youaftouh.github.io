@@ -3,20 +3,90 @@ layout: default
 title: Home
 ---
 
-{% for post in paginator.posts %}
-  {% include featured-post.html %}
-{% endfor %}
+<main class="home-dashboard">
+  <section class="home-intro" aria-labelledby="home-title">
+    <div>
+      <span class="home-eyebrow">Dublin, Ireland · A personal corner of the web</span>
+      <h1 id="home-title">Hi, I'm Yasser Ouaftouh.</h1>
+      <p class="home-tagline">Software engineer. Drone pilot. Chess writer.</p>
+      <p>I build software, explore places through my drone lens, and write about chess. Here you'll find the things I'm making, learning, and discovering along the way.</p>
+      <div class="home-actions">
+        <a class="home-button" href="{{ '/about' | relative_url }}">More about me <span aria-hidden="true">↗</span></a>
+        <a class="home-text-link" href="{{ '/contact' | relative_url }}">Get in touch →</a>
+      </div>
+    </div>
+    <img class="home-portrait" src="https://avatars.githubusercontent.com/u/3003372?v=4" alt="Yasser Ouaftouh" width="160" height="160" />
+  </section>
 
-<!-- Pagination links -->
-<div class="pagination">
-  {% if paginator.next_page %}
-    <a class="pagination-button pagination-active next" href="{{ site.github.url }}{{ paginator.next_page_path }}">{{ site.data.settings.pagination.previous_page }}</a>
-  {% else %}
-    <span class="pagination-button">{{ site.data.settings.pagination.previous_page }}</span>
+  {% assign video = site.data.drone_videos | first %}
+  {% if video %}
+  <section class="home-section" aria-labelledby="home-drone-title">
+    <div class="home-section-heading">
+      <div><span class="home-eyebrow">EireFly · Aerial films</span><h2 id="home-drone-title">Through the drone lens</h2></div>
+      <a href="{{ '/drone-videos' | relative_url }}">All drone videos →</a>
+    </div>
+    <div class="home-video-card">
+      <div class="home-video-player" id="home-video-player">
+        <a class="home-video-preview" id="home-video-preview" href="{{ video.youtube_url | escape }}" data-video-id="{{ video.id | escape }}" data-video-title="{{ video.title | escape }}" aria-label="Play {{ video.title | escape }}">
+          <img src="{{ video.thumbnail | escape }}" alt="{{ video.title | escape }}" loading="lazy" />
+          <span class="home-play"><i class="fa fa-play" aria-hidden="true"></i><span>Watch film</span></span>
+        </a>
+      </div>
+      <div class="home-video-caption"><div><h3>{{ video.title }}</h3><p><i class="fa fa-map-marker" aria-hidden="true"></i> {{ video.location }}{% if video.date %} · {{ video.date }}{% endif %}</p></div><a href="{{ video.youtube_url | escape }}" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></div>
+    </div>
+  </section>
   {% endif %}
-  {% if paginator.previous_page %}
-    <a class="pagination-button pagination-active" href="{{ site.baseurl }}{{ paginator.previous_page_path }}">{{ site.data.settings.pagination.next_page }}</a>
-  {% else %}
-    <span class="pagination-button">{{ site.data.settings.pagination.next_page }}</span>
-  {% endif %}
-</div>
+
+  <div class="home-columns">
+    <section class="home-section" aria-labelledby="home-chess-title">
+      <div class="home-section-heading"><div><span class="home-eyebrow">Stories, strategy &amp; curiosity</span><h2 id="home-chess-title">On the chessboard</h2></div><a href="{{ '/chess-blogs' | relative_url }}">All articles →</a></div>
+      <div class="home-chess-list">
+        {% for blog in site.data.chess_blogs limit:3 %}
+        <a class="home-chess-card" href="{{ blog.url | escape }}" target="_blank" rel="noopener noreferrer">
+          <img src="{{ blog.thumbnail | escape }}" alt="" loading="lazy" width="160" height="100" />
+          <div><span class="home-card-meta">{{ blog.date }} · Chess.com ↗</span><h3>{{ blog.title }}</h3><p>{{ blog.excerpt | strip_html | truncate: 115 }}</p></div>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="home-section" aria-labelledby="home-updates-title">
+      <div class="home-section-heading"><div><span class="home-eyebrow">Building &amp; exploring</span><h2 id="home-updates-title">Projects &amp; activities</h2></div></div>
+      {% assign update_count = 0 %}
+      {% for post in site.posts %}
+        {% unless post.tags contains 'sample' %}
+          {% if post.categories contains 'resources' or post.categories contains 'facts' %}
+            {% if update_count < 3 %}
+            <a class="home-update-card" href="{{ post.url | relative_url }}"><span class="home-card-meta">{% if post.categories contains 'resources' %}Project{% else %}Activity{% endif %} · {{ post.date | date: '%b %-d, %Y' }}</span><h3>{{ post.title }}</h3><p>{{ post.excerpt | strip_html | truncate: 140 }}</p><span class="home-text-link">Read more →</span></a>
+            {% assign update_count = update_count | plus: 1 %}
+            {% endif %}
+          {% endif %}
+        {% endunless %}
+      {% endfor %}
+      {% if update_count == 0 %}
+      <div class="home-coming-soon"><span class="home-work-icon" aria-hidden="true">〈/〉</span><h3>A space for what's next</h3><p>Side projects, experiments, and notes from beyond the screen. I'll share them here as they take shape.</p><a class="home-text-link" href="https://github.com/youaftouh" target="_blank" rel="noopener noreferrer">Explore my GitHub ↗</a></div>
+      {% else %}
+      <div class="home-update-links"><a href="{{ '/resources' | relative_url }}">All projects →</a><a href="{{ '/facts' | relative_url }}">All activities →</a></div>
+      {% endif %}
+    </section>
+  </div>
+
+  <section class="home-connect" aria-labelledby="home-connect-title"><div><h2 id="home-connect-title">Let's connect.</h2><p>Software, scenic flights, or a good game of chess — there's always something to talk about.</p></div><div class="home-socials"><a href="https://github.com/youaftouh" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/in/youaftouh/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="https://www.youtube.com/@eirefly" target="_blank" rel="noopener noreferrer">YouTube ↗</a><a href="{{ '/contact' | relative_url }}">Contact →</a></div></section>
+</main>
+<script>
+(function () {
+  var preview = document.getElementById('home-video-preview');
+  if (!preview) return;
+  preview.addEventListener('click', function (event) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    var frame = document.createElement('iframe');
+    frame.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(preview.dataset.videoId) + '?autoplay=1&rel=0';
+    frame.title = preview.dataset.videoTitle;
+    frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    frame.allowFullscreen = true;
+    document.getElementById('home-video-player').replaceChildren(frame);
+    frame.focus();
+  });
+})();
+</script>

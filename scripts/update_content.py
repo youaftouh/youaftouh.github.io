@@ -3,7 +3,8 @@
 Update script for Yasser Ouaftouh's personal website.
 Fetches the latest:
   1. YouTube drone videos from @eirefly (via RSS with direct channel fallback)
-  2. Chess.com blog posts from yasser-blog (with dynamic discovery and date-based reverse sorting)
+  2. Chess.com blog posts from yasser-blog via Chess.com member activity API
+     (with date-based reverse sorting and fallback preservation)
 and updates the corresponding YAML files in _data/.
 
 Run anytime with:
@@ -13,6 +14,7 @@ Run anytime with:
 import sys
 import os
 import re
+import json
 import datetime
 import urllib.request
 import urllib.parse
@@ -28,6 +30,11 @@ HEADERS = {
     "User-Agent": USER_AGENT,
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "en-US,en;q=0.9"
+}
+API_HEADERS = {
+    "User-Agent": USER_AGENT,
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "X-Requested-With": "XMLHttpRequest"
 }
 
 KNOWN_DRONE_LOCATIONS = {
@@ -147,7 +154,7 @@ def update_drone_videos():
         yaml_lines = ["# Drone videos from @eirefly YouTube channel (https://www.youtube.com/@eirefly/videos)"]
         for v in videos:
             clean_title = v["title"].replace('"', '\\"')
-            yaml_lines.append(f'- id: "{v["id"]}"')
+            yaml_lines.append(f'- id: "{clean_title}"' if False else f'- id: "{v["id"]}"')
             yaml_lines.append(f'  title: "{clean_title}"')
             yaml_lines.append(f'  thumbnail: "{v["thumbnail"]}"')
             yaml_lines.append(f'  youtube_url: "{v["youtube_url"]}"')
@@ -162,101 +169,113 @@ def update_drone_videos():
         print(f"Kept existing {DRONE_FILE} (no new video updates retrieved).")
 
 
+def clean_text(text):
+    if not text:
+        return ""
+    text = text.replace("&quot;", '"').replace("&#039;", "'").replace("&#39;", "'").replace("&amp;", "&")
+    text = text.replace("&nbsp;", " ").replace("\u00a0", " ")
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+
 def update_chess_blogs():
     print("-> Fetching Chess.com blogs from yasser-blog...")
-    
-    # 1. Base list of known article URLs
-    article_urls = [
-        "https://www.chess.com/blog/yasser-blog/my-first-experience-with-chess-i-knew-how-to-play-but-not-how-to-win",
-        "https://www.chess.com/blog/yasser-blog/the-queens-gambit-the-show-that-made-the-world-fall-in-love-with-chess",
-        "https://www.chess.com/blog/yasser-blog/why-is-the-knight-a-horse",
-        "https://www.chess.com/blog/yasser-blog/5-of-the-most-expensive-chess-sets-ever-made",
-        "https://www.chess.com/blog/yasser-blog/if-chess-pieces-had-personalities",
-        "https://www.chess.com/blog/yasser-blog/build-a-simple-chess-game-in-minutes",
-        "https://www.chess.com/blog/yasser-blog/the-pirate-who-sacrificed-a-pawn",
-        "https://www.chess.com/blog/yasser-blog/the-most-underrated-chess-openings",
-        "https://www.chess.com/blog/yasser-blog/top-5-most-famous-anime-that-showcase-chess",
-        "https://www.chess.com/blog/yasser-blog/5-mindset-shifts-that-will-instantly-make-you-a-better-chess-player",
-        "https://www.chess.com/blog/yasser-blog/how-to-unlock-the-searching-for-bobby-fischer-secret-achievement-on-chess-com",
-    ]
+    username = "yasseruski"
+    posts = []
+    seen_urls = set()
 
-    # 2. Also keep any URLs already in _data/chess_blogs.yml so existing posts are never lost
+    # 1. Primary Method: Fetch from Chess.com member activity endpoint (paginated)
+    # This officially indexes all blog posts published by the user in chronological order.
+    try:
+        for page in range(1, 10):
+            api_url = f"https://www.chess.com/callback/member/activity/{username}?page={page}"
+            req = urllib.request.Request(api_url, headers=API_HEADERS)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                items = data.get("recentContents", [])
+                if not items:
+                    break
+                page_blogs = [it for it in items if it.get("type") == "blog"]
+                if not page_blogs and page > 1:
+                    break
+                for b in page_blogs:
+                    sub_url = b.get("url", "")
+                    if not sub_url:
+                        continue
+                    full_url = f"https://www.chess.com/blog/{sub_url}" if not sub_url.startswith("http") else sub_url
+                    if full_url not in seen_urls:
+                        seen_urls.add(full_url)
+                        raw_title = b.get("title", "") or "Chess Blog Post"
+                        raw_body = b.get("body", "") or ""
+                        raw_img = b.get("image", "") or ""
+                        date_str = b.get("localized_date", "") or "Chess.com Blog"
+                        sort_key = b.get("create_date", "") or ""
+
+                        # Clean excerpt
+                        excerpt = clean_text(raw_body)
+                        if len(excerpt) > 280:
+                            excerpt = excerpt[:277] + "..."
+
+                        posts.append({
+                            "id": b.get("id"),
+                            "title": clean_text(raw_title),
+                            "url": full_url,
+                            "thumbnail": raw_img,
+                            "date": date_str,
+                            "sort_key": sort_key,
+                            "excerpt": excerpt
+                        })
+    except Exception as e:
+        print(f"Notice: Chess.com member activity API error: {e}")
+
+    # 2. Check any existing entries in _data/chess_blogs.yml to preserve older/existing entries
+    existing_entries = {}
     if os.path.exists(CHESS_FILE):
         try:
             with open(CHESS_FILE, "r", encoding="utf-8") as f:
                 content = f.read()
-                existing_urls = re.findall(r'url:\s*\"(https?://[^\"]+)\"', content)
-                for u in existing_urls:
-                    if u not in article_urls:
-                        article_urls.append(u)
+            blocks = content.split("- title:")
+            for b in blocks[1:]:
+                block_text = "- title:" + b
+                u_m = re.search(r'url:\s*\"([^\"]+)\"', block_text)
+                t_m = re.search(r'- title:\s*\"([^\"]+)\"', block_text)
+                img_m = re.search(r'thumbnail:\s*\"([^\"]+)\"', block_text)
+                d_m = re.search(r'date:\s*\"([^\"]+)\"', block_text)
+                e_m = re.search(r'excerpt:\s*\"([^\"]+)\"', block_text)
+                if u_m and t_m:
+                    existing_entries[u_m.group(1)] = {
+                        "title": t_m.group(1),
+                        "url": u_m.group(1),
+                        "thumbnail": img_m.group(1) if img_m else "",
+                        "date": d_m.group(1) if d_m else "Chess.com Blog",
+                        "sort_key": d_m.group(1) if d_m else "",
+                        "excerpt": e_m.group(1) if e_m else ""
+                    }
         except Exception as e:
             print(f"Notice: Reading existing chess file: {e}")
 
-    # 3. Discover any new posts via Chess.com blog search
-    for query in ["yasseruski", "yasser-blog"]:
-        try:
-            search_url = f"https://www.chess.com/blog/search?keyword={urllib.parse.quote(query)}"
-            req = urllib.request.Request(search_url, headers=HEADERS)
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                html = resp.read().decode('utf-8', errors='ignore')
-                found_urls = re.findall(r'href=[\"\'](https?://[^\"]*chess\.com/blog/yasser-blog/[a-zA-Z0-9_\-]+)[\"\']', html)
-                for u in found_urls:
-                    if "register" not in u and "login" not in u and u not in article_urls:
-                        print(f"Discovered new blog post: {u}")
-                        article_urls.append(u)
-        except Exception as e:
-            print(f"Notice: search scrape for '{query}': {e}")
+    # 3. For any post where thumbnail is missing, fetch article page og:image
+    for p in posts:
+        if not p["thumbnail"]:
+            try:
+                req = urllib.request.Request(p["url"], headers=HEADERS)
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    html = resp.read().decode("utf-8", errors="ignore")
+                    img = re.search(r'<meta property="og:image" content="([^"]+)"', html)
+                    if img:
+                        p["thumbnail"] = img.group(1)
+            except Exception as e:
+                print(f"Notice: fetching og:image for {p['url']}: {e}")
 
-    posts = []
-    for u in article_urls:
-        req = urllib.request.Request(u, headers=HEADERS)
-        try:
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                html = resp.read().decode('utf-8', errors='ignore')
-                title = re.search(r'<meta property="og:title" content="([^"]+)"', html)
-                img = re.search(r'<meta property="og:image" content="([^"]+)"', html)
-                desc = re.search(r'<meta property="og:description" content="([^"]+)"', html)
-
-                t = title.group(1) if title else "Chess Blog Post"
-                thumb = img.group(1) if img else ""
-                excerpt = desc.group(1) if desc else ""
-
-                # Extract date from time tag
-                time_match = re.search(r'<time[^>]*datetime=[\"\']([^\"\']+)[\"\'][^>]*>(.*?)</time>', html, re.DOTALL)
-                sort_key = ""
-                display_date = "Chess.com Blog"
-                if time_match:
-                    sort_key = time_match.group(1).strip()
-                    raw_text = re.sub(r'<[^>]+>', '', time_match.group(2)).strip()
-                    parts = raw_text.split(',')
-                    if len(parts) >= 2:
-                        display_date = parts[0].strip() + ', ' + parts[1].strip()
-                    else:
-                        display_date = raw_text
-
-                # If no sort_key, extract ID from image or use fallback
-                if not sort_key:
-                    img_id_match = re.search(r'/blog/(\d+)\.', thumb)
-                    sort_key = img_id_match.group(1) if img_id_match else u
-
-                # Clean html entities
-                t = t.replace("&quot;", '"').replace("&#039;", "'").replace("&amp;", "&")
-                excerpt = excerpt.replace("&quot;", '"').replace("&#039;", "'").replace("&amp;", "&")
-
-                posts.append({
-                    "title": t,
-                    "url": u,
-                    "thumbnail": thumb,
-                    "date": display_date,
-                    "sort_key": sort_key,
-                    "excerpt": excerpt
-                })
-        except Exception as e:
-            print(f"Error fetching {u}: {e}")
+    # 4. If any existing entry wasn't returned by API, keep it
+    for u, entry in existing_entries.items():
+        if u not in seen_urls:
+            seen_urls.add(u)
+            posts.append(entry)
 
     if posts:
         # Sort in reverse chronological order (newest first)
-        posts.sort(key=lambda p: p["sort_key"], reverse=True)
+        posts.sort(key=lambda p: p.get("sort_key", ""), reverse=True)
 
         yaml_lines = ["# Chess.com blogs by Yasser (yasser-blog / yasseruski)"]
         for p in posts:
@@ -272,6 +291,8 @@ def update_chess_blogs():
         with open(CHESS_FILE, "w", encoding="utf-8") as f:
             f.write("\n".join(yaml_lines).strip() + "\n")
         print(f"✓ Updated {CHESS_FILE} with {len(posts)} posts (newest first).")
+    else:
+        print(f"Kept existing {CHESS_FILE} (no posts retrieved).")
 
 
 if __name__ == "__main__":

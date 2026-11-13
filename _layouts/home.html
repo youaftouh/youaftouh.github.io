@@ -18,7 +18,7 @@ title: Home
     <img class="home-portrait" src="https://avatars.githubusercontent.com/u/3003372?v=4" alt="Yasser Ouaftouh" width="160" height="160" />
   </section>
 
-  {% assign video = site.data.drone_videos | first %}
+  {% assign video = site.data.drone_videos | where: 'id', '2OM9ucFEG2E' | first %}
   {% if video %}
   <section class="home-section" aria-labelledby="home-drone-title">
     <div class="home-section-heading">

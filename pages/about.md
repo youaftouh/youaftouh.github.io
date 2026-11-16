@@ -6,7 +6,7 @@ permalink: /about
 
 <div class="about-hero">
   <div class="about-avatar-wrap">
-    <img src="https://avatars.githubusercontent.com/u/3003372?v=4" alt="Yasser Ouaftouh" />
+    <img src="https://media.licdn.com/dms/image/v2/C4D03AQGWdFKBHxZFbw/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1557919212179?e=2147483647&amp;v=beta&amp;t=YQ4fICigAQN6FP13OtThOgPBqQY3s8kMuQfnLrTfS-M" alt="Yasser Ouaftouh" />
   </div>
   <div class="about-hero-text">
     <h2>Hi, I'm Yasser Ouaftouh 👋</h2>

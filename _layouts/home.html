@@ -18,21 +18,24 @@ title: Home
     <img class="home-portrait" src="https://avatars.githubusercontent.com/u/3003372?v=4" alt="Yasser Ouaftouh" width="160" height="160" />
   </section>
 
-  {% assign video = site.data.drone_videos | where: 'id', '2OM9ucFEG2E' | first %}
-  {% if video %}
+  {% if site.data.drone_videos.size > 0 %}
   <section class="home-section" aria-labelledby="home-drone-title">
     <div class="home-section-heading">
       <div><span class="home-eyebrow">EireFly · Aerial films</span><h2 id="home-drone-title">Through the drone lens</h2></div>
-      <a href="{{ '/drone-videos' | relative_url }}">All drone videos →</a>
+      <a class="home-drone-link" href="{{ '/drone-videos' | relative_url }}">All drone videos <span aria-hidden="true">→</span></a>
     </div>
-    <div class="home-video-card">
-      <div class="home-video-player" id="home-video-player">
-        <a class="home-video-preview" id="home-video-preview" href="{{ video.youtube_url | escape }}" data-video-id="{{ video.id | escape }}" data-video-title="{{ video.title | escape }}" aria-label="Play {{ video.title | escape }}">
-          <img src="{{ video.thumbnail | escape }}" alt="{{ video.title | escape }}" loading="lazy" />
-          <span class="home-play"><i class="fa fa-play" aria-hidden="true"></i><span>Watch film</span></span>
-        </a>
+    <div class="home-video-grid">
+      {% for video in site.data.drone_videos limit:2 %}
+      <div class="home-video-card">
+        <div class="home-video-player">
+          <a class="home-video-preview" href="{{ video.youtube_url | escape }}" data-video-id="{{ video.id | escape }}" data-video-title="{{ video.title | escape }}" aria-label="Play {{ video.title | escape }}">
+            <img src="{{ video.thumbnail | escape }}" alt="{{ video.title | escape }}" loading="lazy" />
+            <span class="home-play"><i class="fa fa-play" aria-hidden="true"></i><span>Watch film</span></span>
+          </a>
+        </div>
+        <div class="home-video-caption"><div><h3>{{ video.title }}</h3><p><i class="fa fa-map-marker" aria-hidden="true"></i> {{ video.location }}{% if video.date %} · {{ video.date }}{% endif %}</p></div><a href="{{ video.youtube_url | escape }}" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></div>
       </div>
-      <div class="home-video-caption"><div><h3>{{ video.title }}</h3><p><i class="fa fa-map-marker" aria-hidden="true"></i> {{ video.location }}{% if video.date %} · {{ video.date }}{% endif %}</p></div><a href="{{ video.youtube_url | escape }}" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></div>
+      {% endfor %}
     </div>
   </section>
   {% endif %}
@@ -70,23 +73,21 @@ title: Home
       {% endif %}
     </section>
   </div>
-
-  <section class="home-connect" aria-labelledby="home-connect-title"><div><h2 id="home-connect-title">Let's connect.</h2><p>Software, scenic flights, or a good game of chess — there's always something to talk about.</p></div><div class="home-socials"><a href="https://github.com/youaftouh" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/in/youaftouh/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><a href="https://www.youtube.com/@eirefly" target="_blank" rel="noopener noreferrer">YouTube ↗</a><a href="{{ '/contact' | relative_url }}">Contact →</a></div></section>
 </main>
 <script>
 (function () {
-  var preview = document.getElementById('home-video-preview');
-  if (!preview) return;
-  preview.addEventListener('click', function (event) {
-    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    event.preventDefault();
-    var frame = document.createElement('iframe');
-    frame.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(preview.dataset.videoId) + '?autoplay=1&rel=0';
-    frame.title = preview.dataset.videoTitle;
-    frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-    frame.allowFullscreen = true;
-    document.getElementById('home-video-player').replaceChildren(frame);
-    frame.focus();
+  document.querySelectorAll('.home-video-preview').forEach(function (preview) {
+    preview.addEventListener('click', function (event) {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      var frame = document.createElement('iframe');
+      frame.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(preview.dataset.videoId) + '?autoplay=1&rel=0';
+      frame.title = preview.dataset.videoTitle;
+      frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      frame.allowFullscreen = true;
+      preview.closest('.home-video-player').replaceChildren(frame);
+      frame.focus();
+    });
   });
 })();
 </script>

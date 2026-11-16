@@ -11,7 +11,7 @@ permalink: /chess-blogs
   </a>.
 </p>
 
-<div class="chess-grid">
+<div id="chess-gallery" class="chess-grid">
   {% for blog in site.data.chess_blogs %}
   <a href="{{ blog.url }}" class="chess-card" target="_blank" rel="noopener noreferrer" title="Read '{{ blog.title }}' on Chess.com">
     <div class="chess-card-thumb">
@@ -31,3 +31,105 @@ permalink: /chess-blogs
   </a>
   {% endfor %}
 </div>
+
+
+<div id="chess-pagination" class="gallery-pagination" role="navigation" aria-label="Chess blog pages"></div>
+
+<script>
+(function() {
+  var ITEMS_PER_PAGE = 10;
+  var items = Array.prototype.slice.call(document.querySelectorAll('#chess-gallery .chess-card'));
+  var totalItems = items.length;
+  var totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  var paginationContainer = document.getElementById('chess-pagination');
+  var galleryContainer = document.getElementById('chess-gallery');
+
+  if (totalPages <= 1) {
+    if (paginationContainer) paginationContainer.style.display = 'none';
+    return;
+  }
+
+  function getPageFromHash() {
+    var match = window.location.hash.match(/page=(\d+)/);
+    if (match) {
+      var p = parseInt(match[1], 10);
+      if (p >= 1 && p <= totalPages) return p;
+    }
+    return 1;
+  }
+
+  function renderPage(page, scrollToTop) {
+    var start = (page - 1) * ITEMS_PER_PAGE;
+    var end = start + ITEMS_PER_PAGE;
+
+    items.forEach(function(item, idx) {
+      if (idx >= start && idx < end) {
+        item.style.display = '';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+
+    renderControls(page);
+
+    if (scrollToTop && galleryContainer) {
+      galleryContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  function renderControls(currentPage) {
+    if (!paginationContainer) return;
+    paginationContainer.innerHTML = '';
+
+    // Previous Button
+    var prevBtn = document.createElement('button');
+    prevBtn.className = 'gallery-page-btn' + (currentPage === 1 ? ' disabled' : '');
+    prevBtn.innerHTML = '<i class="fa fa-chevron-left"></i> Previous';
+    prevBtn.disabled = (currentPage === 1);
+    prevBtn.onclick = function() {
+      if (currentPage > 1) {
+        window.location.hash = 'page=' + (currentPage - 1);
+      }
+    };
+    paginationContainer.appendChild(prevBtn);
+
+    // Page Numbers
+    for (var i = 1; i <= totalPages; i++) {
+      (function(p) {
+        var numBtn = document.createElement('button');
+        numBtn.className = 'gallery-page-btn' + (p === currentPage ? ' active' : '');
+        numBtn.textContent = p;
+        numBtn.onclick = function() {
+          window.location.hash = 'page=' + p;
+        };
+        paginationContainer.appendChild(numBtn);
+      })(i);
+    }
+
+    // Next Button
+    var nextBtn = document.createElement('button');
+    nextBtn.className = 'gallery-page-btn' + (currentPage === totalPages ? ' disabled' : '');
+    nextBtn.innerHTML = 'Next <i class="fa fa-chevron-right"></i>';
+    nextBtn.disabled = (currentPage === totalPages);
+    nextBtn.onclick = function() {
+      if (currentPage < totalPages) {
+        window.location.hash = 'page=' + (currentPage + 1);
+      }
+    };
+    paginationContainer.appendChild(nextBtn);
+
+    // Page status indicator
+    var status = document.createElement('span');
+    status.className = 'gallery-page-status';
+    status.textContent = 'Showing page ' + currentPage + ' of ' + totalPages + ' (' + totalItems + ' articles)';
+    paginationContainer.appendChild(status);
+  }
+
+  window.addEventListener('hashchange', function() {
+    renderPage(getPageFromHash(), true);
+  });
+
+  // Initial render
+  renderPage(getPageFromHash(), false);
+})();
+</script>

@@ -69,6 +69,40 @@ def infer_location(title, vid_id=""):
     return "Aerial Film"
 
 
+def channel_video_pairs(html):
+    """Read each ID and title from the same YouTube card, never across cards."""
+    match = re.search(r"(?:var\s+)?ytInitialData\s*=\s*", html)
+    if not match:
+        return []
+    data, _ = json.JSONDecoder().raw_decode(html[match.end():])
+    pairs = []
+    seen = set()
+
+    def walk(node):
+        if isinstance(node, list):
+            for child in node:
+                walk(child)
+        elif isinstance(node, dict):
+            card = node.get("lockupViewModel")
+            legacy = node.get("videoRenderer")
+            if card:
+                video_id = card.get("contentId", "")
+                title = card.get("metadata", {}).get("lockupMetadataViewModel", {}).get("title", {}).get("content", "")
+            elif legacy:
+                video_id = legacy.get("videoId", "")
+                title = "".join(run.get("text", "") for run in legacy.get("title", {}).get("runs", []))
+            else:
+                for child in node.values():
+                    walk(child)
+                return
+            if re.fullmatch(r"[a-zA-Z0-9_-]{11}", video_id) and title and video_id not in seen:
+                seen.add(video_id)
+                pairs.append((video_id, title))
+
+    walk(data)
+    return pairs
+
+
 def update_drone_videos():
     print("-> Fetching latest drone videos from @eirefly...")
     channel_id = "UCMkm8dHQ2chmNv6m4NP9rvA"
@@ -131,12 +165,12 @@ def update_drone_videos():
             req = urllib.request.Request(chan_url, headers=HEADERS)
             with urllib.request.urlopen(req, timeout=12) as resp:
                 html = resp.read().decode('utf-8', errors='ignore')
-                matches = re.findall(r'\"videoId\":\"([a-zA-Z0-9_\-]{11})\".*?\"lockupMetadataViewModel\":\{\"title\":\{\"content\":\"([^\"]+)\"\}', html)
+                matches = channel_video_pairs(html)
                 seen_ids = set()
                 for vid_id, title in matches:
                     if vid_id not in seen_ids:
                         seen_ids.add(vid_id)
-                        clean_title = title.replace("\\u0026", "&").replace("&quot;", '"').replace("&#39;", "'")
+                        clean_title = title
                         videos.append({
                             "id": vid_id,
                             "title": clean_title,
@@ -154,7 +188,7 @@ def update_drone_videos():
         yaml_lines = ["# Drone videos from @eirefly YouTube channel (https://www.youtube.com/@eirefly/videos)"]
         for v in videos:
             clean_title = v["title"].replace('"', '\\"')
-            yaml_lines.append(f'- id: "{clean_title}"' if False else f'- id: "{v["id"]}"')
+            yaml_lines.append(f'- id: "{v["id"]}"')
             yaml_lines.append(f'  title: "{clean_title}"')
             yaml_lines.append(f'  thumbnail: "{v["thumbnail"]}"')
             yaml_lines.append(f'  youtube_url: "{v["youtube_url"]}"')

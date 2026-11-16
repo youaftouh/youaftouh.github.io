@@ -30,7 +30,7 @@ title: Home
         <div class="home-video-player">
           <a class="home-video-preview" href="{{ video.youtube_url | escape }}" data-video-id="{{ video.id | escape }}" data-video-title="{{ video.title | escape }}" aria-label="Play {{ video.title | escape }}">
             <img src="{{ video.thumbnail | escape }}" alt="{{ video.title | escape }}" loading="lazy" />
-            <span class="home-play"><i class="fa fa-play" aria-hidden="true"></i><span>Watch film</span></span>
+            <span class="home-play"><i class="fa fa-play" aria-hidden="true"></i><span>Watch</span></span>
           </a>
         </div>
         <div class="home-video-caption"><div><h3>{{ video.title }}</h3><p><i class="fa fa-map-marker" aria-hidden="true"></i> {{ video.location }}{% if video.date %} · {{ video.date }}{% endif %}</p></div><a href="{{ video.youtube_url | escape }}" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a></div>

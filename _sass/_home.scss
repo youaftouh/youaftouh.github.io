@@ -125,13 +125,4 @@
   }
 }
 
-.home-dashboard {
-  .home-project-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
-  .home-project-card { padding: 22px; border: 1px solid #dce5e4; border-radius: 8px; }
-  .home-project-card h3 { margin: 10px 0; font-size: 1.1rem; }
-  .home-project-card p, .home-activities-intro { color: #52636c; }
-  .home-project-card p { margin-bottom: 0; font-size: .9rem; }
-}
-@media (max-width: 760px) {
-  .home-dashboard .home-project-grid { grid-template-columns: 1fr; }
-}
+.home-dashboard .home-activities-intro { color: #52636c; }

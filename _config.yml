@@ -11,7 +11,7 @@ plugins:             [jekyll-paginate, jekyll-sitemap, jekyll-feed, jekyll-seo-t
 
 # Customise atom feed settings (this is where Jekyll-Feed gets configuration information)
 title:               "Yasser Ouaftouh"
-description:         "Personal website & blog of Yasser Ouaftouh — Software Engineer, Drone Pilot & Chess Enthusiast"
+description:         "Yasser Ouaftouh — Software engineer specializing in SAP Commerce and Java. Projects, experiments, and personal interests."
 author:              "Yasser Ouaftouh"
 
 # RSS 2.0 can be used instead of Atom by uncommenting following two lines

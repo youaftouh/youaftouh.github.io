@@ -1,0 +1,15 @@
+- name: Jupiter IDE
+  description: Java integrated development environment built with Swing and Apache Ant.
+  technologies: Java · Swing · Apache Ant
+- name: Tools4&Droid
+  description: Desktop application for installing Android apps and managing devices using ADB.
+  technologies: Qt · C++ · ADB
+- name: AutoSilence
+  description: Android application for automatically switching sound modes during scheduled periods.
+  technologies: Android
+- name: Shutdown Timer
+  description: Mac utility for scheduling shutdown, restart, and logout.
+  technologies: macOS
+- name: axios-cache-nats-adapter
+  description: TypeScript adapter integrating NATS with axios-cache-interceptor.
+  technologies: TypeScript · NATS

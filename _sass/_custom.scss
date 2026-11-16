@@ -659,7 +659,7 @@
 
 .about-highlights-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 20px;
   margin: 25px 0 35px 0;
 }
@@ -724,3 +724,6 @@
   border-color: #1a202c;
   transform: translateY(-1px);
 }
+
+.about-highlight-card { overflow-wrap: anywhere; }
+.about-highlight-card .project-technologies { font-size: .82rem; color: #52636c; }

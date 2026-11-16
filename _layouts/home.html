@@ -6,10 +6,10 @@ title: Home
 <main class="home-dashboard">
   <section class="home-intro" aria-labelledby="home-title">
     <div>
-      <span class="home-eyebrow">Dublin, Ireland · A personal corner of the web</span>
+      <span class="home-eyebrow">Software engineering · Dublin, Ireland</span>
       <h1 id="home-title">Hi, I'm Yasser Ouaftouh.</h1>
-      <p class="home-tagline">Software engineer. Drone pilot. Chess writer.</p>
-      <p>I build software, explore places through my drone lens, and write about chess. Here you'll find the things I'm making, learning, and discovering along the way.</p>
+      <p class="home-tagline">Software engineer · SAP Commerce &amp; Java</p>
+      <p>I specialize in SAP Commerce (formerly Hybris) and enterprise software development. This is where I share projects, experiments, and a few activities and hobbies along the way.</p>
       <div class="home-actions">
         <a class="home-button" href="{{ '/about' | relative_url }}">More about me <span aria-hidden="true">↗</span></a>
         <a class="home-text-link" href="{{ '/contact' | relative_url }}">Get in touch →</a>
@@ -18,10 +18,26 @@ title: Home
     <img class="home-portrait" src="https://avatars.githubusercontent.com/u/3003372?v=4" alt="Yasser Ouaftouh" width="160" height="160" />
   </section>
 
+  <section class="home-section" aria-labelledby="home-projects-title">
+    <div class="home-section-heading">
+      <div><span class="home-eyebrow">Software &amp; side projects</span><h2 id="home-projects-title">Selected projects</h2></div>
+      <a href="{{ '/about' | relative_url }}#projects">More projects →</a>
+    </div>
+    <div class="home-project-grid">
+      {% for project in site.data.projects limit:3 %}
+      <div class="home-project-card"><span class="home-card-meta">{{ project.technologies | escape }}</span><h3>{{ project.name | escape }}</h3><p>{{ project.description | escape }}</p></div>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="home-section" aria-labelledby="home-activities-title">
+    <div class="home-section-heading"><div><span class="home-eyebrow">Beyond work</span><h2 id="home-activities-title">Activities &amp; hobbies</h2></div></div>
+    <p class="home-activities-intro">Hackathons, programming challenges, games, chess, and drone photography are some of the ways I explore ideas outside work. <a class="home-text-link" href="{{ '/about' | relative_url }}">More about my activities →</a></p>
+  </section>
+
   {% if site.data.drone_videos.size > 0 %}
   <section class="home-section" aria-labelledby="home-drone-title">
     <div class="home-section-heading">
-      <div><span class="home-eyebrow">EireFly · Aerial films</span><h2 id="home-drone-title">Through the drone lens</h2></div>
+      <div><span class="home-eyebrow">Drone photography · EireFly</span><h2 id="home-drone-title">Through the drone lens</h2></div>
       <a class="home-drone-link" href="{{ '/drone-videos' | relative_url }}">All drone videos <span aria-hidden="true">→</span></a>
     </div>
     <div class="home-video-grid">
@@ -40,9 +56,9 @@ title: Home
   </section>
   {% endif %}
 
-  <div class="home-columns">
+  <div class="home-hobby-articles">
     <section class="home-section" aria-labelledby="home-chess-title">
-      <div class="home-section-heading"><div><span class="home-eyebrow">Stories, strategy &amp; curiosity</span><h2 id="home-chess-title">On the chessboard</h2></div><a href="{{ '/chess-blogs' | relative_url }}">All articles →</a></div>
+      <div class="home-section-heading"><div><span class="home-eyebrow">Chess articles</span><h2 id="home-chess-title">On the chessboard</h2></div><a href="{{ '/chess-blogs' | relative_url }}">All articles →</a></div>
       <div class="home-chess-list">
         {% for blog in site.data.chess_blogs limit:3 %}
         <a class="home-chess-card" href="{{ blog.url | escape }}" target="_blank" rel="noopener noreferrer">
@@ -51,26 +67,6 @@ title: Home
         </a>
         {% endfor %}
       </div>
-    </section>
-
-    <section class="home-section" aria-labelledby="home-updates-title">
-      <div class="home-section-heading"><div><span class="home-eyebrow">Building &amp; exploring</span><h2 id="home-updates-title">Projects &amp; activities</h2></div></div>
-      {% assign update_count = 0 %}
-      {% for post in site.posts %}
-        {% unless post.tags contains 'sample' %}
-          {% if post.categories contains 'resources' or post.categories contains 'facts' %}
-            {% if update_count < 3 %}
-            <a class="home-update-card" href="{{ post.url | relative_url }}"><span class="home-card-meta">{% if post.categories contains 'resources' %}Project{% else %}Activity{% endif %} · {{ post.date | date: '%b %-d, %Y' }}</span><h3>{{ post.title }}</h3><p>{{ post.excerpt | strip_html | truncate: 140 }}</p><span class="home-text-link">Read more →</span></a>
-            {% assign update_count = update_count | plus: 1 %}
-            {% endif %}
-          {% endif %}
-        {% endunless %}
-      {% endfor %}
-      {% if update_count == 0 %}
-      <div class="home-coming-soon"><span class="home-work-icon" aria-hidden="true">〈/〉</span><h3>A space for what's next</h3><p>Side projects, experiments, and notes from beyond the screen. I'll share them here as they take shape.</p><a class="home-text-link" href="https://github.com/youaftouh" target="_blank" rel="noopener noreferrer">Explore my GitHub ↗</a></div>
-      {% else %}
-      <div class="home-update-links"><a href="{{ '/resources' | relative_url }}">All projects →</a><a href="{{ '/facts' | relative_url }}">All activities →</a></div>
-      {% endif %}
     </section>
   </div>
 </main>
